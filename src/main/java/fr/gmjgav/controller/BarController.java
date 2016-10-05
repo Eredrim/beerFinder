@@ -5,8 +5,10 @@
  */
 package fr.gmjgav.controller;
 
+import com.sun.prism.image.Coords;
 import fr.gmjgav.model.Bar;
 import fr.gmjgav.model.Beer;
+import fr.gmjgav.model.Coordinates;
 import fr.gmjgav.repository.BarRepository;
 import fr.gmjgav.repository.BeerRepository;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import se.walkercrou.places.GooglePlaces;
+import se.walkercrou.places.Place;
 
 /**
  *
@@ -48,14 +51,16 @@ public class BarController {
         return barRepository.findOne(id);
     }
     
-    @RequestMapping(value = "/beerName/{name}", method = GET)
-    public List<Bar> getByBeerName(@PathVariable String name) {
+    @RequestMapping(value = "/beerName/{location}/{name}", method = GET)
+    public List<Bar> getByBeerName(@PathVariable String location, @PathVariable String name) {
+        Coordinates coord = new Coordinates(location);
+        List<Place> places = googleClient.getNearbyPlaces(coord.getLat(), coord.getLng(), 1, GooglePlaces.MAXIMUM_RESULTS);
         Beer beer = beerRepository.findByName(name).get(0);
         return beer.getBars();
     }
     
-    @RequestMapping(value = "/beerType/{type}", method = GET)
-    public List<Bar> getByBeerType(@PathVariable String type) {
+    @RequestMapping(value = "/beerType/{location}/{type}", method = GET)
+    public List<Bar> getByBeerType(@PathVariable String location, @PathVariable String type) {
         List<Beer> beers = beerRepository.findByType(type);
         List<Bar> bars = new ArrayList<>();
         for(Beer beer : beers){
@@ -70,8 +75,8 @@ public class BarController {
         return bars;
     }
     
-    @RequestMapping(value = "/beerCountry/{country}", method = GET)
-    public List<Bar> getByBeerCountry(@PathVariable String country) {
+    @RequestMapping(value = "/beerCountry/{location}/{country}", method = GET)
+    public List<Bar> getByBeerCountry(@PathVariable String location, @PathVariable String country) {
         List<Beer> beers = beerRepository.findByCountry(country);
         List<Bar> bars = new ArrayList<>();
         for(Beer beer : beers){
