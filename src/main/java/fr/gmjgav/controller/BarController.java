@@ -5,7 +5,6 @@
  */
 package fr.gmjgav.controller;
 
-import com.sun.prism.image.Coords;
 import fr.gmjgav.model.Bar;
 import fr.gmjgav.model.Beer;
 import fr.gmjgav.model.Coordinates;
@@ -25,6 +24,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import se.walkercrou.places.GooglePlaces;
+import se.walkercrou.places.Param;
 import se.walkercrou.places.Place;
 
 /**
@@ -51,15 +51,41 @@ public class BarController {
         return barRepository.findOne(id);
     }
     
-    @RequestMapping(value = "/beerName/{location}/{name}", method = GET)
-    public List<Bar> getByBeerName(@PathVariable String location, @PathVariable String name) {
+    @RequestMapping(value = "/any/{location:.+}", method = GET)
+    public List<Bar> getAllBarsWithLocation(@PathVariable String location) {
         Coordinates coord = new Coordinates(location);
-        List<Place> places = googleClient.getNearbyPlaces(coord.getLat(), coord.getLng(), 1, GooglePlaces.MAXIMUM_RESULTS);
-        Beer beer = beerRepository.findByName(name).get(0);
-        return beer.getBars();
+        List<Place> places = googleClient.getNearbyPlaces(coord.getLat(), coord.getLng(), 500, 10, Param.name("types").value("bar"));
+        List<Bar> createdBars = new ArrayList<>();
+        for(Place tmpPlace : places){
+            if(barRepository.findByReference(tmpPlace.getPlaceId()).isEmpty()){
+                Bar generatedBar = new Bar(tmpPlace.getName(), tmpPlace.getPlaceId());
+                createdBars.add(generatedBar);
+            }
+        }
+        if(!createdBars.isEmpty()){
+            barRepository.save(createdBars);
+        }
+        return createdBars;
     }
     
-    @RequestMapping(value = "/beerType/{location}/{type}", method = GET)
+    @RequestMapping(value = "/beerName/{location:.+}/{name}", method = GET)
+    public List<Bar> getByBeerName(@PathVariable String location, @PathVariable String name) {
+        Coordinates coord = new Coordinates(location);
+        List<Place> places = googleClient.getNearbyPlaces(coord.getLat(), coord.getLng(), 500, 10, Param.name("types").value("bar"));
+        Beer beer = beerRepository.findByName(name).get(0);
+        List<Bar> barsForBeer = beer.getBars();
+        List<Bar> returnedBars = new ArrayList<>();
+        for(Bar tmpBar : barsForBeer){
+            for(Place tmpPlace : places){
+                if(tmpPlace.getPlaceId().equals(tmpBar.getReference())){
+                    returnedBars.add(tmpBar);
+                }
+            }
+        }
+        return returnedBars;
+    }
+    
+    @RequestMapping(value = "/beerType/{location:.+}/{type}", method = GET)
     public List<Bar> getByBeerType(@PathVariable String location, @PathVariable String type) {
         List<Beer> beers = beerRepository.findByType(type);
         List<Bar> bars = new ArrayList<>();
@@ -75,7 +101,7 @@ public class BarController {
         return bars;
     }
     
-    @RequestMapping(value = "/beerCountry/{location}/{country}", method = GET)
+    @RequestMapping(value = "/beerCountry/{location:.+}/{country}", method = GET)
     public List<Bar> getByBeerCountry(@PathVariable String location, @PathVariable String country) {
         List<Beer> beers = beerRepository.findByCountry(country);
         List<Bar> bars = new ArrayList<>();
@@ -92,7 +118,7 @@ public class BarController {
     }
     
     @RequestMapping(value = "/{barId}/{beerId}", method = POST)
-    public ResponseEntity<?> postBeerInBar(@PathVariable long barId, @PathVariable long beerId, @RequestBody Object input) {
+    public ResponseEntity<?> postBeerInBar(@PathVariable long barId, @PathVariable long beerId) {
         Bar bar = barRepository.findOne(barId);
         List<Beer> beersOfTheBar = bar.getBeers();
         Beer searchedBeer = beerRepository.findOne(beerId);

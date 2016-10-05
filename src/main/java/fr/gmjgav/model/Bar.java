@@ -21,10 +21,18 @@ public class Bar {
     @ManyToMany
     private List<Beer> beers;
 
-    public Bar(Long id, String name, String reference, String address) {
+    public Bar(Long id, String name, String reference) {
         this.id = id;
         this.name = name;
         this.reference = reference;
+    }
+
+    public Bar(String name, String reference) {
+        this.name = name;
+        this.reference = reference;
+    }
+
+    public Bar() {
     }
 
     public Long getId() {

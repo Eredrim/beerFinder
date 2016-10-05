@@ -5,7 +5,6 @@
  */
 package fr.gmjgav.repository;
 
-import fr.gmjgav.model.Bar;
 import org.springframework.data.repository.CrudRepository;
 import fr.gmjgav.model.Beer;
 import java.util.List;

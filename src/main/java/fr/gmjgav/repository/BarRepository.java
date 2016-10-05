@@ -6,6 +6,7 @@
 package fr.gmjgav.repository;
 
 import fr.gmjgav.model.Bar;
+import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 
 /**
@@ -13,5 +14,5 @@ import org.springframework.data.repository.CrudRepository;
  * @author Gilles
  */
 public interface BarRepository extends CrudRepository<Bar, Long> {
-    
+    List<Bar> findByReference(String reference);
 }
