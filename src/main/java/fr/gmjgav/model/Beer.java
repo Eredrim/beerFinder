@@ -1,5 +1,6 @@
 package fr.gmjgav.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,7 +21,8 @@ public class Beer {
     private String type;
     @Column
     private String country;
-    @ManyToMany
+    @ManyToMany(mappedBy = "beers")
+    @JsonBackReference
     private List<Bar> bars;
 
     public Beer() {
