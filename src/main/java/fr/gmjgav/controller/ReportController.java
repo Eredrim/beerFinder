@@ -13,8 +13,10 @@ import fr.gmjgav.repository.BeerRepository;
 import fr.gmjgav.repository.ReportRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +29,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
  *
  * @author Gilles
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/report")
 public class ReportController {
@@ -54,7 +57,7 @@ public class ReportController {
         Beer beer = beerRepository.findOne(beerId);
         Report report = new Report(bar, beer);
         reportRepository.save(report);
-        return null;
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
 }

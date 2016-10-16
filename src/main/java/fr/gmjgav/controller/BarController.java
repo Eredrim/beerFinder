@@ -6,6 +6,7 @@
 package fr.gmjgav.controller;
 
 import fr.gmjgav.GooglePlacesManager;
+import fr.gmjgav.ListAndStatus;
 import fr.gmjgav.model.Bar;
 import fr.gmjgav.model.Beer;
 import fr.gmjgav.model.Coordinates;
@@ -14,8 +15,10 @@ import fr.gmjgav.repository.BeerRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,14 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
-import se.walkercrou.places.GooglePlaces;
-import se.walkercrou.places.Param;
 import se.walkercrou.places.Place;
 
 /**
  *
  * @author Gilles
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/bar")
 public class BarController {
@@ -38,8 +40,6 @@ public class BarController {
     private BarRepository barRepository;
     @Autowired
     private BeerRepository beerRepository;
-    
-    private final GooglePlaces googleClient = new GooglePlaces("AIzaSyDfA3smjbhDYeXYPe6anqbH4yIKSF1VkAA");
     
     @RequestMapping(method = GET)
     public List<Bar> list() {
@@ -57,14 +57,15 @@ public class BarController {
     }
     
     @RequestMapping(value = "/beerName/{location:.+}/{name}", method = GET)
-    public List<Bar> getByBeerName(@PathVariable String location, @PathVariable String name) {
+    public ResponseEntity<?> getByBeerName(@PathVariable String location, @PathVariable String name) {
         Beer beer = beerRepository.findByName(name).get(0);
         List<Bar> barsForBeer = beer.getBars();
-        return GooglePlacesManager.intersectBarsAndPlaces(barsForBeer, barRepository, new Coordinates(location));
+        ListAndStatus returnedBars = GooglePlacesManager.intersectBarsAndPlaces(barsForBeer, barRepository, new Coordinates(location));
+        return new ResponseEntity<>(returnedBars.getList(), returnedBars.getResponseCode());
     }
     
     @RequestMapping(value = "/beerType/{location:.+}/{type}", method = GET)
-    public List<Bar> getByBeerType(@PathVariable String location, @PathVariable String type) {
+    public ResponseEntity<?> getByBeerType(@PathVariable String location, @PathVariable String type) {
         List<Beer> beers = beerRepository.findByType(type);
         List<Bar> barsForBeers = new ArrayList<>();
         for(Beer beer : beers){
@@ -75,11 +76,12 @@ public class BarController {
                 }
             }
         }
-        return GooglePlacesManager.intersectBarsAndPlaces(barsForBeers, barRepository, new Coordinates(location));
+        ListAndStatus returnedBars = GooglePlacesManager.intersectBarsAndPlaces(barsForBeers, barRepository, new Coordinates(location));
+        return new ResponseEntity<>(returnedBars.getList(), returnedBars.getResponseCode());
     }
     
     @RequestMapping(value = "/beerCountry/{location:.+}/{country}", method = GET)
-    public List<Bar> getByBeerCountry(@PathVariable String location, @PathVariable String country) {
+    public ResponseEntity<?> getByBeerCountry(@PathVariable String location, @PathVariable String country) {
         List<Beer> beers = beerRepository.findByCountry(country);
         List<Bar> bars = new ArrayList<>();
         for(Beer beer : beers){
@@ -90,7 +92,8 @@ public class BarController {
                 }
             }
         }
-        return GooglePlacesManager.intersectBarsAndPlaces(bars, barRepository, new Coordinates(location));
+        ListAndStatus returnedBars = GooglePlacesManager.intersectBarsAndPlaces(bars, barRepository, new Coordinates(location));
+        return new ResponseEntity<>(returnedBars.getList(), returnedBars.getResponseCode());
     }
     
     @RequestMapping(value = "/{barId}/{beerId}", method = POST)
@@ -101,33 +104,18 @@ public class BarController {
         beersOfTheBar.add(searchedBeer);
         bar.setBeers(beersOfTheBar);
         barRepository.save(bar);
-        return null;
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
     @RequestMapping(value = "/{barId}/{beerId}", method = DELETE)
-    public ResponseEntity<Object> deleteBeerInBar(@PathVariable long barId, @PathVariable long beerId) {
+    public ResponseEntity<?> deleteBeerInBar(@PathVariable long barId, @PathVariable long beerId) {
         Bar bar = barRepository.findOne(barId);
         List<Beer> beersOfTheBar = bar.getBeers();
         Beer searchedBeer = beerRepository.findOne(beerId);
         beersOfTheBar.remove(searchedBeer);
         bar.setBeers(beersOfTheBar);
         barRepository.save(bar);
-        return null;
-    }
-    
-    protected List<Place> getPlaces(Coordinates coord){
-        List<Place> places = googleClient.getNearbyPlaces(coord.getLat(), coord.getLng(), 500, 20, Param.name("types").value("bar"));
-        List<Bar> createdBars = new ArrayList<>();
-        for(Place tmpPlace : places){
-            if(barRepository.findByReference(tmpPlace.getPlaceId()).isEmpty()){
-                Bar generatedBar = new Bar(tmpPlace.getName(), tmpPlace.getPlaceId());
-                createdBars.add(generatedBar);
-            }
-        }
-        if(!createdBars.isEmpty()){
-            barRepository.save(createdBars);
-        }
-        return places;
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
 }
