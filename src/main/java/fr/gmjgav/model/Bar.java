@@ -1,8 +1,11 @@
 package fr.gmjgav.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -23,7 +26,7 @@ public class Bar {
     private String reference;
     @ManyToMany
     @JsonManagedReference
-    private List<Beer> beers;
+    private Set<Beer> beers;
 
     public Bar(Long id, String name, String reference) {
         this.id = id;
@@ -64,11 +67,11 @@ public class Bar {
     }
 
     public List<Beer> getBeers() {
-        return beers;
+        return new ArrayList<>(beers);
     }
 
     public void setBeers(List<Beer> beers) {
-        this.beers = beers;
+        this.beers = new HashSet<>(beers);
     }
 
     @Override

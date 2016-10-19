@@ -1,7 +1,10 @@
 package fr.gmjgav.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -23,7 +26,7 @@ public class Beer {
     private String country;
     @ManyToMany(mappedBy = "beers")
     @JsonBackReference
-    private List<Bar> bars;
+    private Set<Bar> bars;
 
     public Beer() {
     }
@@ -67,11 +70,11 @@ public class Beer {
     }
 
     public List<Bar> getBars() {
-        return bars;
+        return new ArrayList<>(bars);
     }
 
     public void setBars(List<Bar> bars) {
-        this.bars = bars;
+        this.bars = new HashSet<>(bars);
     }
 
     @Override
