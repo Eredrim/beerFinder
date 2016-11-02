@@ -52,7 +52,7 @@ public class ReportController {
     }
     
     @RequestMapping(value = "/{barId}/{beerId}", method = POST)
-    public ResponseEntity<?> post(@PathVariable long barId, @PathVariable long beerId, @RequestBody Object input) {
+    public ResponseEntity<?> post(@PathVariable long barId, @PathVariable long beerId) {
         Bar bar = barRepository.findOne(barId);
         Beer beer = beerRepository.findOne(beerId);
         Report report = new Report(bar, beer);
