@@ -15,5 +15,5 @@ import java.util.List;
  * @author Gilles
  */
 public interface ReportRepository extends CrudRepository<Report, Long> {
-    List<Report> findByIds(long barId, long beerId);
+    List<Report> findByBarIdAndBeerId(long barId, long beerId);
 }

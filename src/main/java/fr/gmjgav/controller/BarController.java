@@ -58,10 +58,16 @@ public class BarController {
     
     @RequestMapping(value = "/beerName/{location:.+}/{name}", method = GET)
     public ResponseEntity<?> getByBeerName(@PathVariable String location, @PathVariable String name) {
-        Beer beer = beerRepository.findByName(name).get(0);
-        List<Bar> barsForBeer = beer.getBars();
-        ListAndStatus returnedBars = GooglePlacesManager.intersectBarsAndPlaces(barsForBeer, barRepository, new Coordinates(location));
-        return new ResponseEntity<>(returnedBars.getList(), returnedBars.getResponseCode());
+        Beer beer;
+        try{
+            beer = beerRepository.findByName(name).get(0);
+            List<Bar> barsForBeer = beer.getBars();
+            ListAndStatus returnedBars = GooglePlacesManager.intersectBarsAndPlaces(barsForBeer, barRepository, new Coordinates(location));
+            return new ResponseEntity<>(returnedBars.getList(), returnedBars.getResponseCode());
+        }
+        catch(IndexOutOfBoundsException e){
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     
     @RequestMapping(value = "/beerType/{location:.+}/{type}", method = GET)

@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -55,7 +54,7 @@ public class ReportController {
     public ResponseEntity<?> post(@PathVariable long barId, @PathVariable long beerId) {
         Bar bar = barRepository.findOne(barId);
         Beer beer = beerRepository.findOne(beerId);
-        if(reportRepository.findByIds(barId, beerId).isEmpty()){
+        if(reportRepository.findByBarIdAndBeerId(barId, beerId).isEmpty()){
             Report report = new Report(bar, beer);
             reportRepository.save(report);
             return new ResponseEntity<>(HttpStatus.CREATED);
