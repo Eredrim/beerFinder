@@ -55,12 +55,8 @@ public class ReportController {
     public ResponseEntity<?> post(@PathVariable long barId, @PathVariable long beerId) {
         Bar bar = barRepository.findOne(barId);
         Beer beer = beerRepository.findOne(beerId);
-        
-        if(reportRepository.findByIds(barId, beerId).isEmpty()){
-            Report report = new Report(bar, beer);
-            reportRepository.save(report);
-        }
-        
+        Report report = new Report(bar, beer);
+        reportRepository.save(report);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
