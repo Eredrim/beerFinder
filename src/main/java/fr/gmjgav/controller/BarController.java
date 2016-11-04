@@ -73,6 +73,10 @@ public class BarController {
     @RequestMapping(value = "/beerType/{location:.+}/{type}", method = GET)
     public ResponseEntity<?> getByBeerType(@PathVariable String location, @PathVariable String type) {
         List<Beer> beers = beerRepository.findByType(type);
+        if(beers.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        
         List<Bar> barsForBeers = new ArrayList<>();
         for(Beer beer : beers){
             List<Bar> tmpBarLst = beer.getBars();
@@ -89,6 +93,10 @@ public class BarController {
     @RequestMapping(value = "/beerCountry/{location:.+}/{country}", method = GET)
     public ResponseEntity<?> getByBeerCountry(@PathVariable String location, @PathVariable String country) {
         List<Beer> beers = beerRepository.findByCountry(country);
+        if(beers.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        
         List<Bar> bars = new ArrayList<>();
         for(Beer beer : beers){
             List<Bar> tmpBarLst = beer.getBars();
